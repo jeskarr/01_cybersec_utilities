@@ -1,0 +1,3 @@
+writeme
+How to write text files in Python
+string here is alone

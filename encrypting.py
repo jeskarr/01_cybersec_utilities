@@ -94,6 +94,29 @@ def randomPsw(n=10):
     '''
     return psw
 
+'''
+One way to generate different sequences each time is by putting a different seed each time, this is possible e.g.
+using as seed the current time. E.g.:
+    cur_time = str(time.time()).encode('ASCII')             
+    random.seed(cur_time)  
+N.B. time.time() method return the time in seconds since the epoch (i.e. 1/1/1970) as a floating point number
+'''
+
+#Some method to return a random number in a given range
+'''
+N.B. WE NEED TO IMPORT RANDOM FOR THESE METHODS!
+Both these following methods return an integer number selected element from the specified range, with some little some differences:
+    -random.randrange(start, stop, step), which parameters are:
+        ->start, optional, specify at which position to start (default is 0)
+        ->stop, required, specify at which position to end (NOT INCLUDED!!!)
+        ->step, optional, spceify the incrementation in the range, so the generated random number is divisible by step (default 1)
+    e.g. random.randrange(3, 9)     =>      returns a number between 3 (included) and 9 (not included)
+
+    -random.randint(start, stop), which parameters are both required and specify at which position to start and end (END IS INCLUDED!!!)
+        ->e.g. random.randint(80, 120)      =>      returns a integer between 80 (included) and 120 (included)
+        ->Note: This method is basically an alias for randrange(start, stop+1).
+'''
+
 
 
 ##################################### BASES #####################################
@@ -120,6 +143,31 @@ def BinToChar(bin):
     text = [chr(int(byte, 2)) for byte in bytes_list]
 
     return "".join(text)
+
+#From a string in hexadecimal format to "normal" (unicode) string
+def hex2str(hexStr):
+    decList = []
+    for i in range(len(hexStr) // 2):         
+        hexchar = hexStr[i*2 : (i+1)*2]     #each hex char is formed by 2 simbols  (alternative: hexchar = hexStr[i*2 : i*2+2])
+        decList.append(int(hexchar, base=16))      #transform to decimal each hex char (i.e. couple of simbols)
+    #declist is a list which elements are integers (each integer represent a char)
+    UniStr = ""
+    for elem in decList:
+        UniStr += chr(elem)
+    return UniStr
+
+#From a "normal" (unicode) string to a string in hexadecimal format
+def str2hex(uniStr):
+    decList = []
+    for char in uniStr:
+        decList.append(ord(char))
+    #decList is a list which elements are the decimal value of each char
+    hexstr = ""
+    #hex() function converts an integer to the corresponding hexadecimal number in string form and returns it
+    for elem in decList:
+        hexstr += hex(elem)[2:]     #2: to delete the 0x prefix
+    return hexstr
+
 
 
 ##################################### BASE 64 #####################################
@@ -164,7 +212,55 @@ def B64ToStr(enc_text):
     text = dec_bytes.decode()
 
     return text
-    
+
+
+
+##################################### XOR #####################################
+'''
+Xor, also called exclusive or, is a bitwise adn logical operator which output is:
+    -1 if the operands are different (i.e. one is 1 and the other is 0)
+    -0 when the operands are the same (i.e. both 1 or both 0)
+The symbol for XOR in Python is '^', used e.g. xor_num = num1 ^ num2
+
+The XOR operator is placed between two numbers or boolean values.
+The XOR operation can be used for different purposes:
+    ->XOR of two INTEGERS!
+        -it will compare bits of both the integers bit by bit after converting them into binary numbers
+        -e.g. 15 ^ 32 = 47, beacuse first ^ transform both 15 and 32 to binary, each bit is xored and the result
+            of each bit being xored is then trasform again into integer
+        -e.g. more complicated:   key = ''.join([chr(ord(c1) ^ ord(c2)) for c1,c2 in zip(plaintext, ciphertext_dec)])       #we use ord() to get integer and zip() to iterate the lists at the same time
+    ->XOR of two booleans
+        -do as per definition of XOR
+    ->Swapping two numbers using XOR, etc.
+        -without using a temporary variable we can use XOR doing:
+            a = a ^ b
+            b = a ^ b
+            a = a ^ b
+'''
+
+
+
+##################################### CAESAR CIPHER #####################################
+#Caesar cipher is a shift cipher, that uses the substitution of a letter by another one further (or before) in the alphabet.
+def caesar_cracker(enc_mess, _from = -30, _to = +30):       #since we don't know what is the key let's try various default values (e.g. 30, -30)
+    plaintext = ""
+    for key in range(_from, _to):
+        for c in enc_mess:
+            plaintext += chr(ord(c)+key)
+        print(f"key: {key}\t text: {plaintext}")
+        plaintext = ""
+
+
+
+##################################### VIGENERE CIPHER #####################################
+#Vigenere cipher is a shift cipher, that substitute each letter of a a letter further in the alphabet.
+#This shift is given by a corrispondent char of a key repeated all along the text
+def vigenere_cracker(ciphertext, key):
+    plaintext = ""
+    for i in range(len(ciphertext)):
+        plaintext += chr(97 + (ord(ciphertext[i]) - ord(key[i%len(key)])) % 26)
+
+    return plaintext
 
 
 
@@ -190,6 +286,14 @@ def main():
     binary_hello="0110100001100101011011000110110001101111"
     print(BinToChar(binary_hello))
 
+    print("\n")
+    str_h = "hello"
+    hex = str2hex(str_h)
+    print(hex)
+    print(hex2str(hex))
+
+    print(caesar_cracker("Fdhvdu"))
+    print(vigenere_cracker("FMEORCBI", "KEY"))
 
 
 
